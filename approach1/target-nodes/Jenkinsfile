@@ -1,0 +1,28 @@
+pipeline {
+    agent {
+        label 'ansible'
+    }
+
+    // environment {
+    //     AWS_EC2_PRIVATE_KEY = credentials('ec2-private-key')
+    // }
+
+    stages {
+        // stage('CheckOutCode') {
+        //     steps {
+        //         git branch: 'master', url: 'https://github.com/felixgiftinfo/jenkins-terraform-ansible-dynamic-inv/archive/refs/heads/main.zip'
+        //     }
+        // }
+
+        stage('Ping Host') {
+            steps {
+                sh "ansible ansible-nodes -i DynamicInventory.py -m ping --ssh-common-args='-o StrictHostKeyChecking=no' -u ec2-user --private-key=~/ansible-key.pem"
+            }
+        }
+        stage('Run Play Book') {
+            steps {
+                sh 'ansible-playbook -i DynamicInventory.py engine-config.yml -u ec2-user --private-key=~/ansible-key.pem'
+            }
+        }
+    }
+}
