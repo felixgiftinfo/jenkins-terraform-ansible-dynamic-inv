@@ -17,14 +17,20 @@ sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
 
-# Install Ansible
+# Install Python3
 sudo yum install python3 -y
 sudo yum install -y yum-utils
+sudo python -m ensurepip --upgrade
+sudo pip install boto3
+
+# Install Terraform
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
 sudo yum -y install terraform
 terraform --version
-sudo python -m ensurepip --upgrade
-sudo pip install boto3
+
+# Install Ansible
+# suppress warning when you execute playbook
+sudo install --upgrade request==2.20.1
 sudo amazon-linux-extras install ansible2 -y
 sudo yum install git -y
 EOF
@@ -41,6 +47,8 @@ sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinu
 sudo yum -y install terraform
 terraform --version
 sudo python -m ensurepip --upgrade
+# suppress warning when you execute playbook
+sudo install --upgrade request==2.20.1
 sudo pip install boto3
 sudo amazon-linux-extras install ansible2 -y
 sudo yum install git -y
