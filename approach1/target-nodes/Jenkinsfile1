@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    // environment {
+    //     AWS_EC2_PRIVATE_KEY = credentials('ec2-private-key')
+    // }
+
+    stages {
+        // stage('CheckOutCode') {
+        //     steps {
+        //         checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/felixgiftinfo/jenkins-terraform-ansible-dynamic-inv']])
+        //     }
+        // }
+        stage('Environment') {
+            steps {
+                echo "PATH = ${env.PATH}"
+            }
+        }
+        stage('Checkout1') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/felixgiftinfo/jenkins-terraform-ansible-dynamic-inv']])
+            }
+        }
+        stage('Terraform Init') {
+            steps {
+                sh("terraform -chdir='approach1/target-nodes' init")
+            }
+        }
+        stage('Terraform Validate') {
+            steps {
+                sh("terraform -chdir='approach1/target-nodes' validate")
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                sh("terraform -chdir='approach1/target-nodes' plan")
+            }
+        }
+        stage('Terraform Action') {
+            steps {
+                echo "Terraform action from parameter is -->${action}"
+                sh("terraform -chdir='approach1/target-nodes' ${action} --auto-approve")
+            }
+        }
+        stage('Make DynamicInventory.py Executable') {
+            steps {
+                sh('chmod +x approch1/target-nodes/DynamicInventory.py')
+            }
+        }
+        stage('Execute DynamicInventory.py to see outut') {
+            steps {
+                sh('./DynamicInventory.py')
+            }
+        }
+        stage('Ping Host') {
+            steps {
+                sh("ansible ansible-nodes -i approch1/target-nodes/DynamicInventory.py -m ping --ssh-common-args='-o StrictHostKeyChecking=no' -u ec2-user --private-key=~/ansible-key.pem")
+            }
+        }
+        stage('Run Play Book') {
+            steps {
+                sh('ansible-playbook -i approch1/target-nodes/DynamicInventory.py approch1/target-nodes/engine-config.yml -u ec2-user --private-key=~/ansible-key.pem')
+            }
+        }
+    }
+}
+
