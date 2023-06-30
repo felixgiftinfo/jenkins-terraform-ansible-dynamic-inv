@@ -11,7 +11,8 @@ locals {
 
 resource "aws_instance" "ansible_target_node_server" {
   tags = {
-    "Name" = "ansible-node"
+    "Name" = "ansible-nodes"
+    Type = "Worker-Nodes"
   }
   ami                    = local.ami
   instance_type          = var.instance_type
